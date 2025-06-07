@@ -1170,6 +1170,265 @@ th {
   }
 }
 
+/* ===== FULLSCREEN REŽIM OPTIMALIZACE ===== */
+
+/* Fullscreen detekce pro všechny browsery */
+:fullscreen table,
+:-webkit-full-screen table,
+:-moz-full-screen table,
+:-ms-fullscreen table {
+  width: 100%;
+  height: 80vh; /* 80% výšky obrazovky */
+  max-height: none;
+  font-size: 1rem;
+  display: table;
+  overflow: auto;
+  border-radius: 0;
+  margin: 0;
+}
+
+:fullscreen th,
+:-webkit-full-screen th,
+:-moz-full-screen th,
+:-ms-fullscreen th {
+  padding: 12px 8px;
+  font-size: 1rem;
+  position: sticky;
+  top: 0;
+  background: #0d1117;
+  z-index: 100;
+  border-bottom: 2px solid #00d9ff;
+}
+
+:fullscreen td,
+:-webkit-full-screen td,
+:-moz-full-screen td,
+:-ms-fullscreen td {
+  padding: 10px 8px;
+  font-size: 0.95rem;
+  white-space: normal;
+  min-width: auto;
+  max-width: none;
+}
+
+/* Fullscreen container optimalizace */
+:fullscreen .container,
+:-webkit-full-screen .container,
+:-moz-full-screen .container,
+:-ms-fullscreen .container {
+  max-width: 100%;
+  padding: 20px;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+:fullscreen .card,
+:-webkit-full-screen .card,
+:-moz-full-screen .card,
+:-ms-fullscreen .card {
+  margin: 10px 0;
+  padding: 20px;
+  height: auto;
+  min-height: auto;
+}
+
+/* Fullscreen dashboard optimalizace */
+:fullscreen .dashboard,
+:-webkit-full-screen .dashboard,
+:-moz-full-screen .dashboard,
+:-ms-fullscreen .dashboard {
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 20px;
+  height: auto;
+}
+
+/* Fullscreen grafy optimalizace */
+:fullscreen .charts-container,
+:-webkit-full-screen .charts-container,
+:-moz-full-screen .charts-container,
+:-ms-fullscreen .charts-container {
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 25px;
+  padding: 25px;
+  height: auto;
+}
+
+:fullscreen .chart-card,
+:-webkit-full-screen .chart-card,
+:-moz-full-screen .chart-card,
+:-ms-fullscreen .chart-card {
+  padding: 25px;
+  min-height: 400px;
+}
+
+:fullscreen .chart-card canvas,
+:-webkit-full-screen .chart-card canvas,
+:-moz-full-screen .chart-card canvas,
+:-ms-fullscreen .chart-card canvas {
+  max-height: 350px;
+  min-height: 300px;
+}
+
+/* Fullscreen statistiky */
+:fullscreen .stats,
+:-webkit-full-screen .stats,
+:-moz-full-screen .stats,
+:-ms-fullscreen .stats {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+:fullscreen .stat-item,
+:-webkit-full-screen .stat-item,
+:-moz-full-screen .stat-item,
+:-ms-fullscreen .stat-item {
+  padding: 20px 15px;
+}
+
+:fullscreen .stat-value,
+:-webkit-full-screen .stat-value,
+:-moz-full-screen .stat-value,
+:-ms-fullscreen .stat-value {
+  font-size: 2em;
+}
+
+:fullscreen .stat-label,
+:-webkit-full-screen .stat-label,
+:-moz-full-screen .stat-label,
+:-ms-fullscreen .stat-label {
+  font-size: 1em;
+}
+
+/* Fullscreen typography */
+:fullscreen h1,
+:-webkit-full-screen h1,
+:-moz-full-screen h1,
+:-ms-fullscreen h1 {
+  font-size: 2.5rem;
+  margin: 20px 0;
+}
+
+:fullscreen h2,
+:-webkit-full-screen h2,
+:-moz-full-screen h2,
+:-ms-fullscreen h2 {
+  font-size: 2rem;
+  margin: 15px 0;
+}
+
+:fullscreen h3,
+:-webkit-full-screen h3,
+:-moz-full-screen h3,
+:-ms-fullscreen h3 {
+  font-size: 1.5rem;
+}
+
+/* Fullscreen formuláře */
+:fullscreen input,
+:-webkit-full-screen input,
+:-moz-full-screen input,
+:-ms-fullscreen input,
+:fullscreen select,
+:-webkit-full-screen select,
+:-moz-full-screen select,
+:-ms-fullscreen select,
+:fullscreen textarea,
+:-webkit-full-screen textarea,
+:-moz-full-screen textarea,
+:-ms-fullscreen textarea {
+  padding: 15px 12px;
+  font-size: 1rem;
+}
+
+:fullscreen button,
+:-webkit-full-screen button,
+:-moz-full-screen button,
+:-ms-fullscreen button {
+  padding: 15px 25px;
+  font-size: 1rem;
+  margin: 8px;
+}
+
+/* Fullscreen taby */
+:fullscreen .tabs,
+:-webkit-full-screen .tabs,
+:-moz-full-screen .tabs,
+:-ms-fullscreen .tabs {
+  margin: 25px 0;
+}
+
+:fullscreen .tab,
+:-webkit-full-screen .tab,
+:-moz-full-screen .tab,
+:-ms-fullscreen .tab {
+  padding: 15px 25px;
+  font-size: 1.1rem;
+}
+
+/* Fullscreen na mobilech - speciální případy */
+@media (max-width: 768px) {
+  :fullscreen table,
+  :-webkit-full-screen table,
+  :-moz-full-screen table,
+  :-ms-fullscreen table {
+    height: 85vh;
+    font-size: 0.9rem;
+  }
+  
+  :fullscreen .dashboard,
+  :-webkit-full-screen .dashboard,
+  :-moz-full-screen .dashboard,
+  :-ms-fullscreen .dashboard {
+    grid-template-columns: 1fr;
+  }
+  
+  :fullscreen .charts-container,
+  :-webkit-full-screen .charts-container,
+  :-moz-full-screen .charts-container,
+  :-ms-fullscreen .charts-container {
+    grid-template-columns: 1fr;
+    padding: 15px;
+  }
+  
+  :fullscreen .chart-card,
+  :-webkit-full-screen .chart-card,
+  :-moz-full-screen .chart-card,
+  :-ms-fullscreen .chart-card {
+    min-height: 300px;
+    padding: 20px;
+  }
+}
+
+/* Fullscreen scrollbar styling pro lepší UX */
+:fullscreen ::-webkit-scrollbar,
+:-webkit-full-screen ::-webkit-scrollbar,
+:-moz-full-screen ::-webkit-scrollbar,
+:-ms-fullscreen ::-webkit-scrollbar {
+  width: 12px;
+}
+
+:fullscreen ::-webkit-scrollbar-track,
+:-webkit-full-screen ::-webkit-scrollbar-track,
+:-moz-full-screen ::-webkit-scrollbar-track,
+:-ms-fullscreen ::-webkit-scrollbar-track {
+  background: #1f2633;
+}
+
+:fullscreen ::-webkit-scrollbar-thumb,
+:-webkit-full-screen ::-webkit-scrollbar-thumb,
+:-moz-full-screen ::-webkit-scrollbar-thumb,
+:-ms-fullscreen ::-webkit-scrollbar-thumb {
+  background: #00d9ff;
+  border-radius: 6px;
+}
+
+:fullscreen ::-webkit-scrollbar-thumb:hover,
+:-webkit-full-screen ::-webkit-scrollbar-thumb:hover,
+:-moz-full-screen ::-webkit-scrollbar-thumb:hover,
+:-ms-fullscreen ::-webkit-scrollbar-thumb:hover {
+  background: #00b8cc;
+}
+
   </style>
 </head>
 <body>
