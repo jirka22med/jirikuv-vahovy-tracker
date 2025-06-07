@@ -559,8 +559,8 @@ th {
   /* Taby */
   .tabs {
     flex-wrap: wrap;
-    gap: 5px;
-    margin: 15px 0;
+    gap: 2px;
+    margin: 2px 0;
   }
   
   .tab {
@@ -670,16 +670,16 @@ th {
   }
   
   th, td {
-    padding: 4px 2px;
+    padding: 5px 5px;
     white-space: nowrap;
     min-width: 50px;
-    text-align: left;
+    text-align: center;
   }
   
   th {
     position: sticky;
     top: 0;
-    background: #0d1117;
+    background: green;
     z-index: 10;
   }
   
@@ -734,10 +734,10 @@ th {
   
   /* Taby - vertikální layout */
   .tabs {
-    flex-direction: column;
+    flex-direction: row;
     border-bottom: none;
     gap: 0;
-    margin: 12px 0;
+    margin: 2px 0;
   }
   
   .tab {
@@ -832,12 +832,12 @@ th {
   }
   
   th, td {
-    padding: 3px 1px;
-    min-width: 45px;
+    padding: 2px 1px;
+    min-width: 10px;
   }
   
   .stats {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 2fr 2fr 2fr;
     gap: 4px;
   }
   
@@ -946,9 +946,9 @@ th {
     min-height: 160px;
   }
   
-  /* Statistiky v portrait - 2 sloupce */
+  /* Statistiky v portrait - 3 sloupce */
   .stats {
-    grid-template-columns: 2fr 2fr;
+    grid-template-columns: 2fr 2fr 2fr;
     gap: 8px;
   }
   
@@ -992,8 +992,8 @@ th {
   
   /* Taby ve vertikálním layoutu */
   .tabs {
-    flex-direction: column;
-    margin: 10px 0;
+    flex-direction: row;
+    margin: 2px 0;
   }
   
   .tab {
@@ -1048,12 +1048,12 @@ th {
   
   /* Extra kompaktní statistiky */
   .stats {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 2fr 2fr 2fr;
     gap: 5px;
   }
   
   .stat-item {
-    padding: 8px 5px;
+    padding: 2px 2px;
   }
   
   .stat-value {
@@ -1072,8 +1072,8 @@ th {
   }
   
   th, td {
-    padding: 3px 2px;
-    min-width: 10px;
+    padding: 2px 2px;
+    min-width: 5px;
   }
 }
 
@@ -1167,11 +1167,16 @@ th {
   }
   
   table th, table td {
-    min-height: 900px;
-    padding: 8px 4px;
+    min-height: 5x;
+    padding: 2px 2px;
   }
 }
-
+table td button { /* Tato pravidla přepíší ty výše definované pro 768px a méně */
+        padding: 2px 2px; /* Menší padding */
+        font-size: 0.6em; /* Menší písmo */
+        margin: 2px; /* Menší mezery */
+    }
+}
 /* ===== FULLSCREEN REŽIM OPTIMALIZACE ===== */
 
 /* Fullscreen detekce pro všechny browsery */
@@ -1430,7 +1435,6 @@ th {
 :-ms-fullscreen ::-webkit-scrollbar-thumb:hover {
   background: #00b8cc;
 }
-
   </style>
 </head>
 <body>
