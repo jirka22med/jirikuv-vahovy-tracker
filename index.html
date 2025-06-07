@@ -364,9 +364,11 @@ th {
     border-bottom: 1px solid #444;
   }
   button {
-    padding: 8px 15px;
-    width: 100%;
-    margin: 5px 0;
+    min-height: 5px; /* Doporučená minimální výška pro dotyk */
+        padding: 0px 0px; /* Větší padding pro snadnější dotyk */
+        display: inline-flex; /* Zajistí, že text je vycentrovaný vertikálně */
+        align-items: center;
+        justify-content: center;
   }
   button.fullscreen {
     width: 40px !important;
@@ -494,10 +496,11 @@ th {
   }
   
   button {
-    padding: 12px 15px;
-    font-size: 14px;
-    margin: 8px 5px;
-    border-radius: 8px;
+    min-height: 5px; /* Doporučená minimální výška pro dotyk */
+        padding: 0px 0px; /* Větší padding pro snadnější dotyk */
+        display: inline-flex; /* Zajistí, že text je vycentrovaný vertikálně */
+        align-items: center;
+        justify-content: center;
   }
   
   /* Tabulky */
@@ -653,11 +656,11 @@ th {
   }
   
   button {
-    width: 100%;
-    padding: 10px 12px;
-    margin: 6px 0;
-    font-size: 0.9rem;
-    border-radius: 6px;
+    min-height: 5px; /* Doporučená minimální výška pro dotyk */
+        padding: 0px 0px; /* Větší padding pro snadnější dotyk */
+        display: inline-flex; /* Zajistí, že text je vycentrovaný vertikálně */
+        align-items: center;
+        justify-content: center;
   }
   
   /* Tabulky - extrémní optimalizace */
@@ -985,9 +988,11 @@ th {
   }
   
   button {
-    width: 100%;
-    margin: 5px 0;
-    padding: 12px;
+    min-height: 5px; /* Doporučená minimální výška pro dotyk */
+        padding: 0px 0px; /* Větší padding pro snadnější dotyk */
+        display: inline-flex; /* Zajistí, že text je vycentrovaný vertikálně */
+        align-items: center;
+        justify-content: center;
   }
   
   /* Taby ve vertikálním layoutu */
@@ -1139,8 +1144,11 @@ th {
   }
   
   button {
-    padding: 2px 2px;
-    font-size: 0.85rem;
+    min-height: 5px; /* Doporučená minimální výška pro dotyk */
+        padding: 0px 0px; /* Větší padding pro snadnější dotyk */
+        display: inline-flex; /* Zajistí, že text je vycentrovaný vertikálně */
+        align-items: center;
+        justify-content: center;
   }
   
   input, select, textarea {
@@ -1151,8 +1159,11 @@ th {
 /* Touch-friendly úpravy */
 @media (pointer: coarse) {
   button {
-    min-height: 44px;
-    padding: 12px 16px;
+    min-height: 5px; /* Doporučená minimální výška pro dotyk */
+        padding: 0px 0px; /* Větší padding pro snadnější dotyk */
+        display: inline-flex; /* Zajistí, že text je vycentrovaný vertikálně */
+        align-items: center;
+        justify-content: center;
   }
   
   input, select, textarea {
@@ -1172,9 +1183,73 @@ th {
   }
 }
 table td button { /* Tato pravidla přepíší ty výše definované pro 768px a méně */
-        padding: 2px 2px; /* Menší padding */
-        font-size: 0.6em; /* Menší písmo */
-        margin: 2px; /* Menší mezery */
+        min-height: 5px; /* Doporučená minimální výška pro dotyk */
+        padding: 0px 0px; /* Větší padding pro snadnější dotyk */
+        display: inline-flex; /* Zajistí, že text je vycentrovaný vertikálně */
+        align-items: center;
+        justify-content: center;
+    }
+}
+      /* ===== SPECIFICKÉ ÚPRAVY PRO BUTTON.DANGER A BUTTON.SUCCESS V @MEDIA ===== */
+
+/* Tablety a menší desktopy */
+@media (max-width: 1024px) {
+    button.danger,
+    button.success, button {
+        min-height: 5px; /* Doporučená minimální výška pro dotyk */
+        padding: 0px 0px; /* Větší padding pro snadnější dotyk */
+        display: inline-flex; /* Zajistí, že text je vycentrovaný vertikálně */
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* Větší mobily a malé tablety */
+@media (max-width: 768px) {
+    button.danger,
+    button.success, button {
+        min-height: 5px; /* Doporučená minimální výška pro dotyk */
+        padding: 0px 0px; /* Větší padding pro snadnější dotyk */
+        display: inline-flex; /* Zajistí, že text je vycentrovaný vertikálně */
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* Standardní mobily */
+@media (max-width: 480px) {
+    button.danger,
+    button.success, button {
+        min-height: 5px; /* Doporučená minimální výška pro dotyk */
+        padding: 0px 0px; /* Větší padding pro snadnější dotyk */
+        display: inline-flex; /* Zajistí, že text je vycentrovaný vertikálně */
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* Velmi malé mobily */
+@media (max-width: 360px) {
+    button.danger,
+    button.success, button {
+        min-height: 5px; /* Doporučená minimální výška pro dotyk */
+        padding: 0px 0px; /* Větší padding pro snadnější dotyk */
+        display: inline-flex; /* Zajistí, že text je vycentrovaný vertikálně */
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* Touch-friendly úpravy (platí pro zařízení s dotykovým ovládáním) */
+/* Tato pravidla zajistí, že tlačítka mají dostatečnou dotykovou plochu */
+@media (pointer: coarse) {
+    button.danger,
+    button.success, button {
+        min-height: 5px; /* Doporučená minimální výška pro dotyk */
+        padding: 0px 0px; /* Větší padding pro snadnější dotyk */
+        display: inline-flex; /* Zajistí, že text je vycentrovaný vertikálně */
+        align-items: center;
+        justify-content: center;
     }
 }
 /* ===== FULLSCREEN REŽIM OPTIMALIZACE ===== */
