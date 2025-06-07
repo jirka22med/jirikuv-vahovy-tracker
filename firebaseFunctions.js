@@ -1,174 +1,121 @@
 // firebaseFunctions.js
-// Tento soubor obsahuje logiku pro Firebase Firestore s pokročilým logováním.
+// Tento soubor obsahuje logiku pro Firebase Firestore.
 
 // !!! Zde vlož celý konfigurační objekt, který jsi zkopíroval z Firebase Console !!!
 const firebaseConfig = {
-  apiKey: "AIzaSyBCIHWbqCFJcCiuY-HFM3btTzUsByduluY",
-  authDomain: "moje-vaha-beta-2.firebaseapp.com",
-  projectId: "moje-vaha-beta-2",
-  storageBucket: "moje-vaha-beta-2.firebasestorage.app",
-  messagingSenderId: "870509063847",
-  appId: "1:870509063847:web:6e0f922a1b8637e2713582"
-  //measurementId: "G-D9FCW0YC2K"
+    apiKey: "AIzaSyBCIHWbqCFJcCiuY-HFM3btTzUsByduluY",
+    authDomain: "moje-vaha-beta-2.firebaseapp.com",
+    projectId: "moje-vaha-beta-2",
+    storageBucket: "moje-vaha-beta-2.firebasestorage.app",
+    messagingSenderId: "870509063847",
+    appId: "1:870509063847:web:6e0f922a1b8637e2713582"
+    //measurementId: "G-D9FCW0YC2K" // Pokud nepoužíváš Analytics, může být zakomentováno
 };
+
+// Log pro potvrzení, že firebaseConfig byl načten
+console.log("firebaseFunctions.js: Konfigurační objekt Firebase načten a připraven.", firebaseConfig.projectId);
 
 // Inicializace Firebase aplikace
 // Bude voláno až po načtení Firebase SDK
 let db; // Proměnná pro instanci Firestore databáze
 
-// Pomocné funkce pro barevné logování
-const logSuccess = (message, data = null) => {
-    console.log(`%c✅ SUCCESS: ${message}`, 'color: #22c55e; font-weight: bold;');
-    if (data) console.log('%cData:', 'color: #22c55e;', data);
-};
-
-const logError = (message, error = null) => {
-    console.log(`%c❌ ERROR: ${message}`, 'color: #ef4444; font-weight: bold;');
-    if (error) console.error('%cError details:', 'color: #ef4444;', error);
-};
-
-const logInfo = (message, data = null) => {
-    console.log(`%c🔵 INFO: ${message}`, 'color: #3b82f6; font-weight: bold;');
-    if (data) console.log('%cData:', 'color: #3b82f6;', data);
-};
-
-const logWarning = (message, data = null) => {
-    console.log(`%c⚠️ WARNING: ${message}`, 'color: #f59e0b; font-weight: bold;');
-    if (data) console.log('%cData:', 'color: #f59e0b;', data);
-};
-
-const logProcess = (message) => {
-    console.log(`%c🔄 PROCESSING: ${message}`, 'color: #8b5cf6; font-weight: bold;');
-};
-
 window.initializeFirebaseApp = function() {
-    logProcess('Zahajuji inicializaci Firebase aplikace...');
-    
-    try {
-        // Kontrola dostupnosti Firebase SDK
-        if (typeof firebase === 'undefined') {
-            logError('Firebase SDK není načteno!');
-            return false;
-        }
-        logSuccess('Firebase SDK úspěšně načteno');
-
-        // Kontrolujeme, zda je globální objekt firebase a jeho metody dostupné.
-        // Metoda getApps() zkontroluje, zda už Firebase aplikace nebyla inicializována.
-        if (!firebase.apps.length) {
-            logProcess('Inicializuji novou Firebase aplikace...');
-            firebase.initializeApp(firebaseConfig);
-            logSuccess('Firebase aplikace úspěšně inicializována', {
-                projectId: firebaseConfig.projectId,
-                authDomain: firebaseConfig.authDomain
-            });
-        } else {
-            logWarning('Firebase aplikace již byla dříve inicializována');
-        }
-        
-        // Získáme instanci Firestore databáze
-        logProcess('Připojuji se k Firestore databázi...');
-        db = firebase.firestore();
-        
-        if (db) {
-            logSuccess('Firestore databáze úspěšně připojena a připravena k použití');
-            logInfo('Databáze je připravena pro operace', {
-                type: 'Firestore',
-                project: firebaseConfig.projectId
-            });
-            return true;
-        } else {
-            logError('Nepodařilo se získat instanci Firestore databáze');
-            return false;
-        }
-        
-    } catch (error) {
-        logError('Kritická chyba při inicializaci Firebase', error);
+    console.log("initializeFirebaseApp: Spuštěna inicializace Firebase aplikace.");
+    // Kontrolujeme, zda je globální objekt firebase a jeho metody dostupné.
+    // Metoda getApps() zkontroluje, zda už Firebase aplikace nebyla inicializována.
+    if (typeof firebase === 'undefined' || typeof firebase.initializeApp === 'undefined') {
+        console.error("initializeFirebaseApp: Firebase SDK není načteno. Nelze inicializovat.");
         return false;
     }
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+        console.log("initializeFirebaseApp: Firebase aplikace inicializována.");
+    } else {
+        console.log("initializeFirebaseApp: Firebase aplikace již byla inicializována (přeskakuji).");
+    }
+    
+    // Získáme instanci Firestore databáze
+    db = firebase.firestore();
+    console.log("initializeFirebaseApp: Firestore databáze připravena.");
+    return true; // Signalizuje úspěšnou inicializaci
 };
 
-// Funkce pro uložení dat do Firestore
+
+// --- FUNKCE PRO UKLÁDÁNÍ A NAČÍTÁNÍ VÁHOVÝCH ZÁZNAMŮ (weightLog) ---
+
+// Funkce pro uložení dat weightLog do Firestore
+// Data budou ukládána do kolekce 'weightEntries'
+// Každý záznam bude dokumentem s ID rovným datumu záznamu (pro snadný upsert)
 window.saveWeightLogToFirestore = async function(weightLogArray) {
-    logProcess(`Zahajuji ukládání ${weightLogArray.length} záznamů do Firestore...`);
-    
+    console.log("saveWeightLogToFirestore: Pokus o uložení dat weightLog do Firestore.", weightLogArray);
     if (!db) {
-        logError('Firestore databáze není inicializována, nelze uložit data');
+        console.error("saveWeightLogToFirestore: Firestore databáze není inicializována, nelze uložit data.");
         throw new Error("Firestore databáze není připravena k uložení dat.");
     }
-    logSuccess('Firestore databáze je připravena pro zápis');
+
+    if (!weightLogArray || weightLogArray.length === 0) {
+        console.warn("saveWeightLogToFirestore: Pole weightLog k uložení je prázdné. Přeskakuji ukládání.");
+        // Volitelně můžete smazat kolekci, pokud je pole prázdné a chcete udržet db čistou
+        // await window.clearAllFirestoreData(); 
+        return; 
+    }
+
+    const batch = db.batch(); // Používáme batch pro efektivnější zápis více dokumentů
+    console.log("saveWeightLogToFirestore: Vytvářím dávku pro zápis weightLog.");
+
+    // Nejprve získáme všechny existující dokumenty v kolekci 'weightEntries'
+    // a přidáme je do batch pro smazání, aby se předešlo duplicitám při plné synchronizaci.
+    // POZOR: Toto maže všechny existující záznamy a nahrazuje je těmi z weightLogArray.
+    // Pro reálnou aplikaci byste chtěli dělat chytřejší diff.
+    const existingDocs = await db.collection('weightEntries').get();
+    existingDocs.forEach(doc => {
+        batch.delete(doc.ref);
+    });
+    console.log(`saveWeightLogToFirestore: Přidáno ${existingDocs.size} existujících dokumentů weightLog do dávky ke smazání.`);
+
+    weightLogArray.forEach(entry => {
+        const docRef = db.collection('weightEntries').doc(entry.date); // Datum jako ID dokumentu
+        console.log(`saveWeightLogToFirestore: Přidávám dokument pro datum: ${entry.date} do dávky.`);
+        batch.set(docRef, {
+            date: entry.date,
+            weight: entry.weight,
+            bodyFat: entry.bodyFat,
+            muscleMass: entry.muscleMass,
+            bodyWater: entry.bodyWater,
+            manualBMR: entry.manualBMR,
+            manualAMR: entry.manualAMR,
+            notes: entry.notes || '',
+        });
+    });
 
     try {
-        logProcess('Vytvářím batch operaci pro efektivní zápis...');
-        const batch = db.batch(); // Používáme batch pro efektivnější zápis více dokumentů
-        let processedCount = 0;
-
-        weightLogArray.forEach((entry, index) => {
-            logInfo(`Zpracovávám záznam ${index + 1}/${weightLogArray.length}`, {
-                date: entry.date,
-                weight: entry.weight
-            });
-            
-            // Používáme datum jako ID dokumentu pro jednoduchý upsert (aktualizace/vložení)
-            const docRef = db.collection('weightEntries').doc(entry.date); 
-            
-            batch.set(docRef, {
-                date: entry.date,
-                weight: entry.weight,
-                bodyFat: entry.bodyFat,
-                muscleMass: entry.muscleMass,
-                bodyWater: entry.bodyWater,
-                manualBMR: entry.manualBMR,
-                manualAMR: entry.manualAMR,
-                notes: entry.notes || '',
-            });
-            
-            processedCount++;
-        });
-
-        logSuccess(`Všech ${processedCount} záznamů připraveno pro zápis`);
-        logProcess('Odesílám batch operaci do Firestore...');
-        
+        console.log("saveWeightLogToFirestore: Odesílám dávku weightLog k zápisu.");
         await batch.commit(); // Odeslání všech zápisů
-        
-        logSuccess(`Data úspěšně uložena do Firestore! Uloženo ${processedCount} záznamů`, {
-            collection: 'weightEntries',
-            recordsCount: processedCount
-        });
+        console.log("saveWeightLogToFirestore: Data weightLog úspěšně uložena do Firestore.");
         return true;
-        
     } catch (error) {
-        logError('Kritická chyba při ukládání dat do Firestore', error);
+        console.error("saveWeightLogToFirestore: Chyba při ukládání dat weightLog do Firestore:", error);
         throw error;
     }
 };
 
-// Funkce pro načtení dat z Firestore
+// Funkce pro načtení dat weightLog z Firestore
 window.loadWeightLogFromFirestore = async function() {
-    logProcess('Zahajuji načítání dat z Firestore...');
-    
+    console.log("loadWeightLogFromFirestore: Pokus o načtení dat weightLog z Firestore.");
     if (!db) {
-        logError('Firestore databáze není inicializována, nelze načíst data');
+        console.error("loadWeightLogFromFirestore: Firestore databáze není inicializována, nelze načíst data.");
         return []; // Vrať prázdné pole, pokud databáze není připravena
     }
-    logSuccess('Firestore databáze je připravena pro čtení');
 
     try {
-        logProcess('Odesílám dotaz do Firestore kolekce "weightEntries"...');
+        console.log("loadWeightLogFromFirestore: Načítám snímek kolekce 'weightEntries'.");
         const snapshot = await db.collection('weightEntries').orderBy('date').get();
-        
-        if (snapshot.empty) {
-            logWarning('Kolekce je prázdná - nebyla nalezena žádná data');
-            return [];
-        }
-        
-        logInfo(`Nalezeno ${snapshot.size} dokumentů v kolekci`);
-        
         const loadedData = [];
-        let processedDocs = 0;
-        
+        console.log("loadWeightLogFromFirestore: Snímek načten, zpracovávám dokumenty weightLog.");
         snapshot.forEach(doc => {
             const data = doc.data();
-            const record = {
+            loadedData.push({
                 date: data.date,
                 weight: data.weight,
                 bodyFat: data.bodyFat || null,
@@ -177,104 +124,170 @@ window.loadWeightLogFromFirestore = async function() {
                 manualBMR: data.manualBMR || null,
                 manualAMR: data.manualAMR || null,
                 notes: data.notes || ''
-            };
-            
-            loadedData.push(record);
-            processedDocs++;
-            
-            logInfo(`Zpracován dokument ${processedDocs}/${snapshot.size}`, {
-                id: doc.id,
-                date: data.date,
-                weight: data.weight
             });
+            console.log(`loadWeightLogFromFirestore: Přidán weightLog dokument: ${doc.id}`);
         });
-        
-        logSuccess(`Data úspěšně načtena z Firestore! Načteno ${loadedData.length} záznamů`, {
-            collection: 'weightEntries',
-            recordsCount: loadedData.length,
-            dateRange: loadedData.length > 0 ? {
-                from: loadedData[0].date,
-                to: loadedData[loadedData.length - 1].date
-            } : null
-        });
-        
+        console.log("loadWeightLogFromFirestore: Data weightLog úspěšně načtena z Firestore:", loadedData);
         return loadedData;
-        
     } catch (error) {
-        logError('Kritická chyba při načítání dat z Firestore', error);
+        console.error("loadWeightLogFromFirestore: Chyba při načítání dat weightLog z Firestore:", error);
         throw error;
     }
 };
 
-// Funkce pro smazání záznamu z Firestore
+// Funkce pro smazání jednotlivého záznamu weightLog z Firestore
 window.deleteWeightEntryFromFirestore = async function(date) {
-    logProcess(`Zahajuji mazání záznamu pro datum: ${date}`);
-    
+    console.log(`deleteWeightEntryFromFirestore: Pokus o smazání záznamu pro datum: ${date} z kolekce 'weightEntries'.`);
     if (!db) {
-        logError('Firestore databáze není inicializována, nelze smazat data');
+        console.error("deleteWeightEntryFromFirestore: Firestore databáze není inicializována, nelze smazat data.");
         throw new Error("Firestore databáze není připravena ke smazání dat.");
     }
-    logSuccess('Firestore databáze je připravena pro mazání');
-    
     try {
-        logProcess(`Odesílám požadavek na smazání dokumentu s ID: ${date}`);
+        console.log(`deleteWeightEntryFromFirestore: Mažu dokument s ID: ${date} z 'weightEntries'.`);
         await db.collection('weightEntries').doc(date).delete();
-        
-        logSuccess(`Záznam pro datum ${date} úspěšně smazán z Firestore`, {
-            collection: 'weightEntries',
-            deletedDocument: date
-        });
+        console.log(`deleteWeightEntryFromFirestore: Záznam pro datum ${date} úspěšně smazán z Firestore.`);
         return true;
-        
     } catch (error) {
-        logError(`Kritická chyba při mazání záznamu pro datum ${date} z Firestore`, error);
+        console.error(`deleteWeightEntryFromFirestore: Chyba při mazání záznamu pro datum ${date} z Firestore:`, error);
+        throw error;
+    }
+};
+
+// --- NOVÉ FUNKCE PRO UKLÁDÁNÍ A NAČÍTÁNÍ NASTAVENÍ (settings) ---
+
+// Funkce pro uložení settings do Firestore
+window.saveSettingsToFirestore = async function(settingsObject) {
+    console.log("saveSettingsToFirestore: Pokus o uložení nastavení do Firestore.", settingsObject);
+    if (!db) {
+        console.error("saveSettingsToFirestore: Firestore databáze není inicializována, nelze uložit nastavení.");
+        throw new Error("Firestore databáze není připravena k uložení nastavení.");
+    }
+    try {
+        // Uložíme settings jako jeden dokument v kolekci 'userSettings'
+        // Použijeme pevné ID dokumentu, např. 'mainSettings'
+        const docRef = db.collection('userSettings').doc('mainSettings');
+        console.log("saveSettingsToFirestore: Ukládám dokument 'mainSettings' do kolekce 'userSettings'.");
+        await docRef.set(settingsObject, { merge: true }); // merge: true sloučí nová data s existujícími
+        console.log("saveSettingsToFirestore: Nastavení úspěšně uložena do Firestore.");
+        return true;
+    } catch (error) {
+        console.error("saveSettingsToFirestore: Chyba při ukládání nastavení do Firestore:", error);
+        throw error;
+    }
+};
+
+// Funkce pro načtení settings z Firestore
+window.loadSettingsFromFirestore = async function() {
+    console.log("loadSettingsFromFirestore: Pokus o načtení nastavení z Firestore.");
+    if (!db) {
+        console.error("loadSettingsFromFirestore: Firestore databáze není inicializována, nelze načíst nastavení.");
+        return null; // Vrať null, pokud databáze není připravena
+    }
+    try {
+        const docRef = db.collection('userSettings').doc('mainSettings');
+        console.log("loadSettingsFromFirestore: Načítám dokument 'mainSettings' z kolekce 'userSettings'.");
+        const doc = await docRef.get();
+        if (doc.exists) {
+            console.log("loadSettingsFromFirestore: Nastavení úspěšně načtena z Firestore.", doc.data());
+            return doc.data();
+        } else {
+            console.log("loadSettingsFromFirestore: Dokument s nastavením 'mainSettings' neexistuje.");
+            return null;
+        }
+    } catch (error) {
+        console.error("loadSettingsFromFirestore: Chyba při načítání nastavení z Firestore:", error);
+        throw error;
+    }
+};
+
+// --- NOVÉ FUNKCE PRO UKLÁDÁNÍ A NAČÍTÁNÍ CÍLŮ (goals) ---
+
+// Funkce pro uložení goals do Firestore
+window.saveGoalsToFirestore = async function(goalsObject) {
+    console.log("saveGoalsToFirestore: Pokus o uložení cílů do Firestore.", goalsObject);
+    if (!db) {
+        console.error("saveGoalsToFirestore: Firestore databáze není inicializována, nelze uložit cíle.");
+        throw new Error("Firestore databáze není připravena k uložení cílů.");
+    }
+    try {
+        // Uložíme goals jako jeden dokument v kolekci 'userGoals'
+        // Použijeme pevné ID dokumentu, např. 'mainGoals'
+        const docRef = db.collection('userGoals').doc('mainGoals');
+        console.log("saveGoalsToFirestore: Ukládám dokument 'mainGoals' do kolekce 'userGoals'.");
+        await docRef.set(goalsObject, { merge: true });
+        console.log("saveGoalsToFirestore: Cíle úspěšně uloženy do Firestore.");
+        return true;
+    } catch (error) {
+        console.error("saveGoalsToFirestore: Chyba při ukládání cílů do Firestore:", error);
+        throw error;
+    }
+};
+
+// Funkce pro načtení goals z Firestore
+window.loadGoalsFromFirestore = async function() {
+    console.log("loadGoalsFromFirestore: Pokus o načtení cílů z Firestore.");
+    if (!db) {
+        console.error("loadGoalsFromFirestore: Firestore databáze není inicializována, nelze načíst cíle.");
+        return null; // Vrať null, pokud databáze není připravena
+    }
+    try {
+        const docRef = db.collection('userGoals').doc('mainGoals');
+        console.log("loadGoalsFromFirestore: Načítám dokument 'mainGoals' z kolekce 'userGoals'.");
+        const doc = await docRef.get();
+        if (doc.exists) {
+            console.log("loadGoalsFromFirestore: Cíle úspěšně načteny z Firestore.", doc.data());
+            return doc.data();
+        } else {
+            console.log("loadGoalsFromFirestore: Dokument s cíli 'mainGoals' neexistuje.");
+            return null;
+        }
+    } catch (error) {
+        console.error("loadGoalsFromFirestore: Chyba při načítání cílů z Firestore:", error);
         throw error;
     }
 };
 
 // Funkce pro smazání všech dat z kolekce Firestore (POZOR! Důrazně! Záměrné mazání všech dat!)
+// Rozšířena o mazání settings a goals kolekcí
 window.clearAllFirestoreData = async function() {
-    logWarning('⚠️ POZOR! Zahajuji mazání VŠECH dat z Firestore!');
-    
+    console.log("clearAllFirestoreData: Pokus o smazání všech dat z Firebase Firestore (všechny určené kolekce).");
     if (!db) {
-        logError('Firestore databáze není inicializována, nelze smazat všechna data');
+        console.error("clearAllFirestoreData: Firestore databáze není inicializována, nelze smazat všechna data.");
         throw new Error("Firestore databáze není připravena ke smazání všech dat.");
     }
-    logSuccess('Firestore databáze je připravena pro hromadné mazání');
 
     try {
-        logProcess('Načítám všechny dokumenty z kolekce "weightEntries"...');
-        const collectionRef = db.collection('weightEntries');
-        const snapshot = await collectionRef.get();
-        
-        if (snapshot.empty) {
-            logWarning('Kolekce je již prázdná - není co mazat');
-            return true;
+        // Seznam kolekcí, které chceme smazat
+        const collectionsToClear = ['weightEntries', 'userSettings', 'userGoals'];
+        let totalDeletedCount = 0;
+
+        for (const collectionName of collectionsToClear) {
+            console.log(`clearAllFirestoreData: Spouštím mazání dokumentů z kolekce '${collectionName}'.`);
+            const collectionRef = db.collection(collectionName);
+            const snapshot = await collectionRef.get();
+            const batch = db.batch();
+            let deletedInCollection = 0;
+
+            if (snapshot.size === 0) {
+                console.log(`clearAllFirestoreData: Kolekce '${collectionName}' je již prázdná.`);
+                continue; // Přeskočit, pokud v kolekci nejsou žádné dokumenty
+            }
+
+            snapshot.docs.forEach(doc => {
+                batch.delete(doc.ref);
+                deletedInCollection++;
+            });
+
+            console.log(`clearAllFirestoreData: Přidáno ${deletedInCollection} dokumentů z kolekce '${collectionName}' do dávky pro smazání.`);
+            await batch.commit();
+            console.log(`clearAllFirestoreData: Smazáno ${deletedInCollection} dokumentů z kolekce '${collectionName}'.`);
+            totalDeletedCount += deletedInCollection;
         }
         
-        logInfo(`Nalezeno ${snapshot.size} dokumentů k smazání`);
-        logProcess('Vytvářím batch operaci pro hromadné mazání...');
-        
-        const batch = db.batch();
-        let docsToDelete = 0;
-
-        snapshot.docs.forEach(doc => {
-            batch.delete(doc.ref);
-            docsToDelete++;
-            logInfo(`Přidán dokument do batch mazání: ${doc.id}`);
-        });
-
-        logProcess(`Odesílám batch operaci pro smazání ${docsToDelete} dokumentů...`);
-        await batch.commit();
-        
-        logSuccess(`Všechna data z Firestore kolekce 'weightEntries' úspěšně smazána!`, {
-            collection: 'weightEntries',
-            deletedDocuments: docsToDelete
-        });
+        console.log(`clearAllFirestoreData: Všechna data z určených kolekcí Firestore úspěšně smazána. Celkem smazáno: ${totalDeletedCount} dokumentů.`);
         return true;
-        
     } catch (error) {
-        logError('Kritická chyba při mazání všech dat z Firestore', error);
+        console.error("clearAllFirestoreData: Chyba při mazání všech dat z Firestore:", error);
         throw error;
     }
 };
