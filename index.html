@@ -422,6 +422,7 @@ th {
   height: auto !important;
   max-height: 200px; 
 }
+
 /* ===== MOBILNÍ RESPONZIVITA - KOMPLETNÍ @MEDIA QUERIES ===== */
 
 /* Tablety a menší desktopy */
@@ -947,7 +948,7 @@ th {
   
   /* Statistiky v portrait - 2 sloupce */
   .stats {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 2fr 2fr;
     gap: 8px;
   }
   
@@ -1066,13 +1067,13 @@ th {
   /* Tabulky s extra scroll možnostmi */
   table {
     font-size: 0.6rem;
-    max-height: 250px;
+    max-height: 2500px;
     overflow: auto;
   }
   
   th, td {
     padding: 3px 2px;
-    min-width: 40px;
+    min-width: 10px;
   }
 }
 
@@ -1127,22 +1128,23 @@ th {
   }
   
   table {
-    font-size: 0.55rem;
-    max-height: 200px;
+    font-size: 0.6rem;
+    max-height: 2500px;
+    overflow: auto;
   }
   
   th, td {
     padding: 2px 1px;
-    min-width: 35px;
+    min-width: 2px;
   }
   
   button {
-    padding: 10px 8px;
+    padding: 2px 2px;
     font-size: 0.85rem;
   }
   
   input, select, textarea {
-    padding: 10px 6px;
+    padding: 2px 2px;
   }
 }
 
@@ -1165,7 +1167,7 @@ th {
   }
   
   table th, table td {
-    min-height: 40px;
+    min-height: 900px;
     padding: 8px 4px;
   }
 }
@@ -1178,7 +1180,7 @@ th {
 :-moz-full-screen table,
 :-ms-fullscreen table {
   width: 100%;
-  height: 80vh; /* 80% výšky obrazovky */
+  height: 900vh; /* 80% výšky obrazovky */
   max-height: none;
   font-size: 1rem;
   display: table;
@@ -1218,7 +1220,7 @@ th {
 :-ms-fullscreen .container {
   max-width: 100%;
   padding: 20px;
-  height: 100vh;
+  height: 900vh;
   overflow-y: auto;
 }
 
@@ -1371,7 +1373,7 @@ th {
   :-webkit-full-screen table,
   :-moz-full-screen table,
   :-ms-fullscreen table {
-    height: 85vh;
+    height: 900vh;
     font-size: 0.9rem;
   }
   
