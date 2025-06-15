@@ -2059,33 +2059,39 @@ table td button { /* Tato pravidla přepíší ty výše definované pro 768px a
     };
 
     window.checkBMIAlert = function(bmi) {
-        console.log("checkBMIAlert: Kontroluji BMI pro upozornění.");
-        const alertEl = document.getElementById('bmiAlert');
-        if (bmi === 0) {
-            alertEl.className = 'alert';
-            console.log("checkBMIAlert: BMI je 0, upozornění skryto.");
-            return;
-        }
-        if (bmi > settings.bmiDangerUpper) {
-            alertEl.innerHTML = `⚠️ Varování: Vaše BMI (${bmi.toFixed(1)}) je výrazně nad doporučenou hranicí!`;
-            alertEl.className = 'alert show';
-            alertEl.style.background = '#ff5555';
-            console.warn(`checkBMIAlert: BMI (${bmi.toFixed(1)}) je v nebezpečném pásmu.`);
-        } else if (bmi > settings.bmiWarningUpper) {
-            alertEl.innerHTML = `⚡ Upozornění: Vaše BMI (${bmi.toFixed(1)}) překračuje doporučenou hranici.`;
-            alertEl.className = 'alert show';
-            alertEl.style.background = '#ffaa00';
-            console.warn(`checkBMIAlert: BMI (${bmi.toFixed(1)}) je v varovném pásmu.`);
-        } else if (bmi < settings.bmiWarningLower && bmi > 0) {
-            alertEl.innerHTML = `⚡ Upozornění: Vaše BMI (${bmi.toFixed(1)}) je pod doporučenou hranicí.`;
-            alertEl.className = 'alert show';
-            alertEl.style.background = '#00aaff';
-            console.warn(`checkBMIAlert: BMI (${bmi.toFixed(1)}) je pod doporučenou hranicí.`);
-        } else {
-            alertEl.className = 'alert';
-            console.log("checkBMIAlert: BMI je v normě, upozornění skryto.");
-        }
-    };
+        console.log("checkBMIAlert: Kontroluji BMI pro upozornění."); // Toto zůstane jako běžný log
+
+        const alertEl = document.getElementById('bmiAlert');
+        if (bmi === 0) {
+            alertEl.className = 'alert';
+            console.log("%ccheckBMIAlert: BMI je 0, upozornění skryto.", "color: #aaaaaa;"); // Šedá pro skryté
+            return;
+        }
+
+        if (bmi > settings.bmiDangerUpper) {
+            alertEl.innerHTML = `⚠️ Varování: Vaše BMI (${bmi.toFixed(1)}) je výrazně nad doporučenou hranicí!`;
+            alertEl.className = 'alert show';
+            alertEl.style.background = '#ff5555';
+            // Změna zde: Červený text pro konzoli, jasně definovaný jako "hlídač systému"
+            console.log("%ccheckBMIAlert: HLÍDAČ SYSTÉMU - BMI (" + bmi.toFixed(1) + ") je v nebezpečném pásmu.", "color: #ff5555; font-weight: bold;");
+        } else if (bmi > settings.bmiWarningUpper) {
+            alertEl.innerHTML = `⚡ Upozornění: Vaše BMI (${bmi.toFixed(1)}) překračuje doporučenou hranici.`;
+            alertEl.className = 'alert show';
+            alertEl.style.background = '#ffaa00';
+            // Změna zde: Oranžový text pro konzoli, definovaný jako "hlídač systému"
+            console.log("%ccheckBMIAlert: HLÍDAČ SYSTÉMU - BMI (" + bmi.toFixed(1) + ") překračuje doporučenou hranici.", "color: #ffaa00; font-weight: bold;");
+        } else if (bmi < settings.bmiWarningLower && bmi > 0) {
+            alertEl.innerHTML = `⚡ Upozornění: Vaše BMI (${bmi.toFixed(1)}) je pod doporučenou hranicí.`;
+            alertEl.className = 'alert show';
+            alertEl.style.background = '#00aaff';
+            // Změna zde: Světle modrý text pro konzoli, definovaný jako "hlídač systému"
+            console.log("%ccheckBMIAlert: HLÍDAČ SYSTÉMU - BMI (" + bmi.toFixed(1) + ") je pod doporučenou hranicí.", "color: #00aaff; font-weight: bold;");
+        } else {
+            alertEl.className = 'alert';
+            // Změna zde: Zelený text pro konzoli, definovaný jako "hlídač systému"
+            console.log("%ccheckBMIAlert: HLÍDAČ SYSTÉMU - BMI (" + bmi.toFixed(1) + ") je v normě.", "color: #55ff99;");
+        }
+    };
 
     window.showNotification = function(message, duration = 3000) {
         console.log(`showNotification: Zobrazuji notifikaci: "${message}"`);
