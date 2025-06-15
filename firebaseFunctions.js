@@ -1,7 +1,8 @@
 // firebaseFunctions.js
-// Tento soubor obsahuje logiku pro Firebase Firestore.
+// Tento soubor obsahuje logiku pro Firebase Firestore a Firebase Messaging.
 
-// !!! Zde vlož celý konfigurační objekt, který jsi zkopíroval z Firebase Console !!!
+// !!! Zde je tvůj kompletní konfigurační objekt z Firebase Console !!!
+// Ujisti se, že tento objekt je přesný a obsahuje 'messagingSenderId'.
 const firebaseConfig = {
     apiKey: "AIzaSyBCIHWbqCFJcCiuY-HFM3btTzUsByduluY",
     authDomain: "moje-vaha-beta-2.firebaseapp.com",
@@ -15,14 +16,12 @@ const firebaseConfig = {
 // Log pro potvrzení, že firebaseConfig byl načten
 console.log("firebaseFunctions.js: Konfigurační objekt Firebase načten a připraven.", firebaseConfig.projectId);
 
-// Inicializace Firebase aplikace
-// Bude voláno až po načtení Firebase SDK
 let db; // Proměnná pro instanci Firestore databáze
+let messaging; // Proměnná pro instanci Firebase Messaging
 
 window.initializeFirebaseApp = function() {
     console.log("initializeFirebaseApp: Spuštěna inicializace Firebase aplikace.");
     // Kontrolujeme, zda je globální objekt firebase a jeho metody dostupné.
-    // Metoda getApps() zkontroluje, zda už Firebase aplikace nebyla inicializována.
     if (typeof firebase === 'undefined' || typeof firebase.initializeApp === 'undefined') {
         console.error("initializeFirebaseApp: Firebase SDK není načteno. Nelze inicializovat.");
         return false;
@@ -38,15 +37,88 @@ window.initializeFirebaseApp = function() {
     // Získáme instanci Firestore databáze
     db = firebase.firestore();
     console.log("initializeFirebaseApp: Firestore databáze připravena.");
+
+    // --- Inicializace Firebase Messaging ---
+    // Kontroluje, zda prohlížeč podporuje messaging a service workers
+    if (firebase.messaging.isSupported()) {
+        messaging = firebase.messaging();
+        // Nastaví Service Worker pro Messaging.
+        // Důležité: 'getRegistration()' získá odkaz na již zaregistrovaný service worker.
+        navigator.serviceWorker.getRegistration().then(registration => {
+            if (registration) {
+                messaging.useServiceWorker(registration);
+                console.log("initializeFirebaseApp: Firebase Messaging Service Worker nastaven.");
+                
+                // Můžete zde také naslouchat zprávám, když je aplikace na popředí
+                // messaging.onMessage((payload) => {
+                //     console.log('Zpráva přijata (popředí):', payload);
+                //     window.showNotification(payload.notification.title + ": " + payload.notification.body, 5000);
+                // });
+
+            } else {
+                console.warn("initializeFirebaseApp: Service Worker ještě není zaregistrován. Messaging nemusí fungovat správně na pozadí.");
+            }
+        }).catch(error => {
+            console.error("initializeFirebaseApp: Chyba při získávání Service Worker registrace pro Messaging:", error);
+        });
+    } else {
+        console.warn("initializeFirebaseApp: Firebase Messaging není v tomto prohlížeči podporováno.");
+    }
+    // --- Konec inicializace Firebase Messaging ---
+
     return true; // Signalizuje úspěšnou inicializaci
 };
 
+// --- NOVÁ FUNKCE: Žádost o povolení notifikací a získání tokenu ---
+window.requestNotificationPermission = async function() {
+    console.log("requestNotificationPermission: Žádám o povolení notifikací...");
+    // Zde se ujistěte, že 'messaging' instance je dostupná
+    if (!messaging) {
+        console.error("requestNotificationPermission: Firebase Messaging není inicializováno.");
+        window.showNotification("Chyba: Služba upozornění není dostupná. Zkuste aktualizovat stránku.", 4000);
+        return null;
+    }
+    
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            console.log('requestNotificationPermission: Povolení pro notifikace uděleno.');
+            // Získání a uložení zařízení registračního tokenu (FCM token)
+            const token = await messaging.getToken();
+            console.log('requestNotificationPermission: FCM zařízení registrační token:', token);
+            
+            // VOLITELNÉ: Zde můžete uložit tento token do Firestore
+            // např. do speciální kolekce 'notificationTokens', abyste mohli cílit na konkrétní uživatele
+            // nebo si token zapsat pro budoucí ruční odesílání notifikací z vlastního serveru.
+            // Příklad uložení do Firestore:
+            try {
+                await db.collection('notificationTokens').doc(token).set({ 
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    lastActive: firebase.firestore.FieldValue.serverTimestamp(),
+                    deviceType: navigator.userAgent // pro debug
+                }, { merge: true }); // merge: true aktualizuje, pokud token existuje
+                console.log("requestNotificationPermission: FCM token úspěšně uložen do Firestore.");
+            } catch (dbError) {
+                console.error("requestNotificationPermission: Chyba při ukládání FCM tokenu do Firestore:", dbError);
+                window.showNotification("Chyba při ukládání tokenu pro notifikace do databáze.", 4000);
+            }
+
+            window.showNotification('Upozornění budou nyní aktivní!', 3000);
+            return token;
+        } else {
+            console.warn('requestNotificationPermission: Povolení pro notifikace zamítnuto.');
+            window.showNotification('Upozornění jsou vypnuta. Můžete je povolit v nastavení prohlížeče.', 5000);
+            return null;
+        }
+    } catch (error) {
+        console.error('requestNotificationPermission: Chyba při získávání tokenu pro notifikace:', error);
+        window.showNotification('Chyba při povolování upozornění.', 4000);
+        return null;
+    }
+};
 
 // --- FUNKCE PRO UKLÁDÁNÍ A NAČÍTÁNÍ VÁHOVÝCH ZÁZNAMŮ (weightLog) ---
 
-// Funkce pro uložení dat weightLog do Firestore
-// Data budou ukládána do kolekce 'weightEntries'
-// Každý záznam bude dokumentem s ID rovným datumu záznamu (pro snadný upsert)
 window.saveWeightLogToFirestore = async function(weightLogArray) {
     console.log("saveWeightLogToFirestore: Pokus o uložení dat weightLog do Firestore.", weightLogArray);
     if (!db) {
@@ -55,24 +127,22 @@ window.saveWeightLogToFirestore = async function(weightLogArray) {
     }
 
     if (!weightLogArray || weightLogArray.length === 0) {
-        console.warn("saveWeightLogToFirestore: Pole weightLog k uložení je prázdné. Přeskakuji ukládání.");
-        // Volitelně můžete smazat kolekci, pokud je pole prázdné a chcete udržet db čistou
-        // await window.clearAllFirestoreData(); 
-        return; 
+        console.warn("saveWeightLogToFirestore: Pole weightLog k uložení je prázdné. Mažu kolekci 'weightEntries'.");
+        await window.clearCollection('weightEntries'); // Voláme novou pomocnou funkci
+        return;
     }
 
-    const batch = db.batch(); // Používáme batch pro efektivnější zápis více dokumentů
+    const batch = db.batch();
     console.log("saveWeightLogToFirestore: Vytvářím dávku pro zápis weightLog.");
 
-    // Nejprve získáme všechny existující dokumenty v kolekci 'weightEntries'
-    // a přidáme je do batch pro smazání, aby se předešlo duplicitám při plné synchronizaci.
-    // POZOR: Toto maže všechny existující záznamy a nahrazuje je těmi z weightLogArray.
-    // Pro reálnou aplikaci byste chtěli dělat chytřejší diff.
-    const existingDocs = await db.collection('weightEntries').get();
-    existingDocs.forEach(doc => {
+    // Smazání všech existujících dokumentů v kolekci 'weightEntries' před nahráním nových
+    // To zajistí, že data ve Firestore přesně odpovídají lokálnímu 'weightLog'
+    const existingDocsSnapshot = await db.collection('weightEntries').get();
+    existingDocsSnapshot.forEach(doc => {
         batch.delete(doc.ref);
     });
-    console.log(`saveWeightLogToFirestore: Přidáno ${existingDocs.size} existujících dokumentů weightLog do dávky ke smazání.`);
+    console.log(`saveWeightLogToFirestore: Přidáno ${existingDocsSnapshot.size} existujících dokumentů weightLog do dávky ke smazání.`);
+
 
     weightLogArray.forEach(entry => {
         const docRef = db.collection('weightEntries').doc(entry.date); // Datum jako ID dokumentu
@@ -91,7 +161,7 @@ window.saveWeightLogToFirestore = async function(weightLogArray) {
 
     try {
         console.log("saveWeightLogToFirestore: Odesílám dávku weightLog k zápisu.");
-        await batch.commit(); // Odeslání všech zápisů
+        await batch.commit();
         console.log("saveWeightLogToFirestore: Data weightLog úspěšně uložena do Firestore.");
         return true;
     } catch (error) {
@@ -100,12 +170,11 @@ window.saveWeightLogToFirestore = async function(weightLogArray) {
     }
 };
 
-// Funkce pro načtení dat weightLog z Firestore
 window.loadWeightLogFromFirestore = async function() {
     console.log("loadWeightLogFromFirestore: Pokus o načtení dat weightLog z Firestore.");
     if (!db) {
         console.error("loadWeightLogFromFirestore: Firestore databáze není inicializována, nelze načíst data.");
-        return []; // Vrať prázdné pole, pokud databáze není připravena
+        return [];
     }
 
     try {
@@ -135,7 +204,6 @@ window.loadWeightLogFromFirestore = async function() {
     }
 };
 
-// Funkce pro smazání jednotlivého záznamu weightLog z Firestore
 window.deleteWeightEntryFromFirestore = async function(date) {
     console.log(`deleteWeightEntryFromFirestore: Pokus o smazání záznamu pro datum: ${date} z kolekce 'weightEntries'.`);
     if (!db) {
@@ -153,9 +221,8 @@ window.deleteWeightEntryFromFirestore = async function(date) {
     }
 };
 
-// --- NOVÉ FUNKCE PRO UKLÁDÁNÍ A NAČÍTÁNÍ NASTAVENÍ (settings) ---
+// --- FUNKCE PRO UKLÁDÁNÍ A NAČÍTÁNÍ NASTAVENÍ (settings) ---
 
-// Funkce pro uložení settings do Firestore
 window.saveSettingsToFirestore = async function(settingsObject) {
     console.log("saveSettingsToFirestore: Pokus o uložení nastavení do Firestore.", settingsObject);
     if (!db) {
@@ -163,11 +230,9 @@ window.saveSettingsToFirestore = async function(settingsObject) {
         throw new Error("Firestore databáze není připravena k uložení nastavení.");
     }
     try {
-        // Uložíme settings jako jeden dokument v kolekci 'userSettings'
-        // Použijeme pevné ID dokumentu, např. 'mainSettings'
         const docRef = db.collection('userSettings').doc('mainSettings');
         console.log("saveSettingsToFirestore: Ukládám dokument 'mainSettings' do kolekce 'userSettings'.");
-        await docRef.set(settingsObject, { merge: true }); // merge: true sloučí nová data s existujícími
+        await docRef.set(settingsObject, { merge: true });
         console.log("saveSettingsToFirestore: Nastavení úspěšně uložena do Firestore.");
         return true;
     } catch (error) {
@@ -176,12 +241,11 @@ window.saveSettingsToFirestore = async function(settingsObject) {
     }
 };
 
-// Funkce pro načtení settings z Firestore
 window.loadSettingsFromFirestore = async function() {
     console.log("loadSettingsFromFirestore: Pokus o načtení nastavení z Firestore.");
     if (!db) {
         console.error("loadSettingsFromFirestore: Firestore databáze není inicializována, nelze načíst nastavení.");
-        return null; // Vrať null, pokud databáze není připravena
+        return null;
     }
     try {
         const docRef = db.collection('userSettings').doc('mainSettings');
@@ -200,9 +264,8 @@ window.loadSettingsFromFirestore = async function() {
     }
 };
 
-// --- NOVÉ FUNKCE PRO UKLÁDÁNÍ A NAČÍTÁNÍ CÍLŮ (goals) ---
+// --- FUNKCE PRO UKLÁDÁNÍ A NAČÍTÁNÍ CÍLŮ (goals) ---
 
-// Funkce pro uložení goals do Firestore
 window.saveGoalsToFirestore = async function(goalsObject) {
     console.log("saveGoalsToFirestore: Pokus o uložení cílů do Firestore.", goalsObject);
     if (!db) {
@@ -210,8 +273,6 @@ window.saveGoalsToFirestore = async function(goalsObject) {
         throw new Error("Firestore databáze není připravena k uložení cílů.");
     }
     try {
-        // Uložíme goals jako jeden dokument v kolekci 'userGoals'
-        // Použijeme pevné ID dokumentu, např. 'mainGoals'
         const docRef = db.collection('userGoals').doc('mainGoals');
         console.log("saveGoalsToFirestore: Ukládám dokument 'mainGoals' do kolekce 'userGoals'.");
         await docRef.set(goalsObject, { merge: true });
@@ -223,12 +284,11 @@ window.saveGoalsToFirestore = async function(goalsObject) {
     }
 };
 
-// Funkce pro načtení goals z Firestore
 window.loadGoalsFromFirestore = async function() {
     console.log("loadGoalsFromFirestore: Pokus o načtení cílů z Firestore.");
     if (!db) {
         console.error("loadGoalsFromFirestore: Firestore databáze není inicializována, nelze načíst cíle.");
-        return null; // Vrať null, pokud databáze není připravena
+        return null;
     }
     try {
         const docRef = db.collection('userGoals').doc('mainGoals');
@@ -247,8 +307,43 @@ window.loadGoalsFromFirestore = async function() {
     }
 };
 
-// Funkce pro smazání všech dat z kolekce Firestore (POZOR! Důrazně! Záměrné mazání všech dat!)
-// Rozšířena o mazání settings a goals kolekcí
+// --- POMOCNÁ FUNKCE PRO SMAZÁNÍ CELÉ KOLEKCE (pro clearAllFirestoreData) ---
+// Tuto funkci volá 'clearAllFirestoreData' pro smazání jednotlivých kolekcí
+window.clearCollection = async function(collectionName) {
+    console.log(`clearCollection: Spouštím mazání všech dokumentů z kolekce '${collectionName}'.`);
+    if (!db) {
+        console.error("clearCollection: Firestore databáze není inicializována.");
+        throw new Error("Firestore databáze není připravena k mazání.");
+    }
+    try {
+        const collectionRef = db.collection(collectionName);
+        const snapshot = await collectionRef.get();
+        const batch = db.batch();
+        let deletedCount = 0;
+
+        if (snapshot.size === 0) {
+            console.log(`clearCollection: Kolekce '${collectionName}' je již prázdná.`);
+            return 0;
+        }
+
+        snapshot.docs.forEach(doc => {
+            batch.delete(doc.ref);
+            deletedCount++;
+        });
+
+        console.log(`clearCollection: Přidáno ${deletedCount} dokumentů z kolekce '${collectionName}' do dávky pro smazání.`);
+        await batch.commit();
+        console.log(`clearCollection: Smazáno ${deletedCount} dokumentů z kolekce '${collectionName}'.`);
+        return deletedCount;
+    } catch (error) {
+        console.error(`clearCollection: Chyba při mazání kolekce '${collectionName}':`, error);
+        throw error;
+    }
+};
+
+
+// --- FUNKCE PRO SMAZÁNÍ VŠECH DAT Z KOLEKCÍ FIRESTORE (POZOR! Důrazně!) ---
+// Rozšířena o mazání settings a goals kolekcí pomocí 'clearCollection'
 window.clearAllFirestoreData = async function() {
     console.log("clearAllFirestoreData: Pokus o smazání všech dat z Firebase Firestore (všechny určené kolekce).");
     if (!db) {
@@ -257,31 +352,11 @@ window.clearAllFirestoreData = async function() {
     }
 
     try {
-        // Seznam kolekcí, které chceme smazat
-        const collectionsToClear = ['weightEntries', 'userSettings', 'userGoals'];
+        const collectionsToClear = ['weightEntries', 'userSettings', 'userGoals', 'notificationTokens']; // Přidáme i kolekci pro tokeny
         let totalDeletedCount = 0;
 
         for (const collectionName of collectionsToClear) {
-            console.log(`clearAllFirestoreData: Spouštím mazání dokumentů z kolekce '${collectionName}'.`);
-            const collectionRef = db.collection(collectionName);
-            const snapshot = await collectionRef.get();
-            const batch = db.batch();
-            let deletedInCollection = 0;
-
-            if (snapshot.size === 0) {
-                console.log(`clearAllFirestoreData: Kolekce '${collectionName}' je již prázdná.`);
-                continue; // Přeskočit, pokud v kolekci nejsou žádné dokumenty
-            }
-
-            snapshot.docs.forEach(doc => {
-                batch.delete(doc.ref);
-                deletedInCollection++;
-            });
-
-            console.log(`clearAllFirestoreData: Přidáno ${deletedInCollection} dokumentů z kolekce '${collectionName}' do dávky pro smazání.`);
-            await batch.commit();
-            console.log(`clearAllFirestoreData: Smazáno ${deletedInCollection} dokumentů z kolekce '${collectionName}'.`);
-            totalDeletedCount += deletedInCollection;
+            totalDeletedCount += await window.clearCollection(collectionName);
         }
         
         console.log(`clearAllFirestoreData: Všechna data z určených kolekcí Firestore úspěšně smazána. Celkem smazáno: ${totalDeletedCount} dokumentů.`);
