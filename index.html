@@ -4,12 +4,14 @@
   <meta charset="UTF-8">
   <title>Pokročilý váhový tracker více admirála Jiříka</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
-    
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    
+<!-- Základní Firebase SDK knihovny (MUSÍ BÝT NAČTENY PRVNÍ!) -->
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-messaging.js"></script>     
+    
+<!-- A TEĎ NÁŠ VLASTNÍ SOUBOR S FIREBASE FUNKCEMI -->
 <script src="firebaseFunctions.js"></script>
   <style>
 body {
@@ -1751,20 +1753,19 @@ table td button { /* Tato pravidla přepíší ty výše definované pro 768px a
         </div>
 
         <div class="card">
-    <h3>Připomínky</h3>
-    <form id="remindersForm">
-        <div class="form-group">
-            <label for="reminderEnabled">Povolit připomínky:</label>
-            <input type="checkbox" id="reminderEnabled" style="width: auto;">
+          <h3>Připomínky</h3>
+          <form id="remindersForm">
+            <div class="form-group">
+              <label for="reminderEnabled">Povolit připomínky:</label>
+              <input type="checkbox" id="reminderEnabled" style="width: auto;">
+            </div>
+            <div class="form-group">
+              <label for="reminderInterval">Interval připomínek (dny):</label>
+              <input type="number" id="reminderInterval" min="1" max="30" value="7">
+            </div>
+            <button type="submit">Uložit připomínky</button>
+          </form>
         </div>
-        <div class="form-group">
-            <label for="reminderInterval">Interval připomínek (dny):</label>
-            <input type="number" id="reminderInterval" min="1" max="30" value="7">
-        </div>
-        <button type="submit">Uložit připomínky</button>
-        <button type="button" onclick="window.requestNotificationPermission()">🔔 Povolit webová upozornění</button>
-        </form>
-</div>
       </div>
     </div>
 
