@@ -4,14 +4,12 @@
   <meta charset="UTF-8">
   <title>Pokročilý váhový tracker více admirála Jiříka</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
-    
-<!-- Základní Firebase SDK knihovny (MUSÍ BÝT NAČTENY PRVNÍ!) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
-    
-<!-- A TEĎ NÁŠ VLASTNÍ SOUBOR S FIREBASE FUNKCEMI -->
+<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-messaging.js"></script>     
 <script src="firebaseFunctions.js"></script>
   <style>
 body {
@@ -519,19 +517,20 @@ th {
   
   /* Statistiky */
   .stats {
-    gap: 0px;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
   }
   
   .stat-item {
-    padding: 2px 2px;
+    padding: 12px 8px;
   }
   
   .stat-value {
-    font-size: 1rem;
+    font-size: 1.3em;
   }
   
   .stat-label {
-    font-size: 0.6em;
+    font-size: 0.75em;
   }
   
   /* Grafy */
@@ -686,20 +685,26 @@ th {
   }
   
   /* Statistiky - dvousloupkový layout */
-  ..stats {
-    gap: 0px;
+  .stats {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin: 12px 0;
   }
   
   .stat-item {
-    padding: 2px 2px;
+    padding: 8px 6px;
+    border-radius: 6px;
   }
   
   .stat-value {
-    font-size: 1rem;
+    font-size: 1.1em;
+    line-height: 1.2;
   }
   
   .stat-label {
-    font-size: 0.6em;
+    font-size: 0.65em;
+    margin-top: 2px;
+    line-height: 1.1;
   }
   
   /* Grafy - plná šířka */
@@ -833,11 +838,12 @@ th {
   }
   
   .stats {
-    gap: 0px;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 4px;
   }
   
   .stat-item {
-    padding: 2px 2px;
+    padding: 5px 5px;
   }
   
   .stat-value {
@@ -943,19 +949,23 @@ th {
   
   /* Statistiky v portrait - 3 sloupce */
   .stats {
-    gap: 0px;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
   }
   
   .stat-item {
-    padding: 2px 2px;
+    padding: 5px 5px;
+    text-align: center;
   }
   
   .stat-value {
-    font-size: 1rem;
+    font-size: 1.2em;
+    display: block;
   }
   
   .stat-label {
-    font-size: 0.6em;
+    font-size: 0.7em;
+    margin-top: 3px;
   }
   
   /* Tabulky v portrait - více vertikálního prostoru */
@@ -1041,7 +1051,8 @@ th {
   
   /* Extra kompaktní statistiky */
   .stats {
-    gap: 0px;
+    grid-template-columns: 2fr 2fr 2fr;
+    gap: 5px;
   }
   
   .stat-item {
@@ -1049,11 +1060,11 @@ th {
   }
   
   .stat-value {
-    font-size: 1rem;
+    font-size: 1.1em;
   }
   
   .stat-label {
-    font-size: 0.6em;
+    font-size: 0.65em;
   }
   
   /* Tabulky s extra scroll možnostmi */
@@ -1104,11 +1115,11 @@ th {
   }
   
   .stats {
-    gap: 0px;
+    gap: 3px;
   }
   
   .stat-item {
-    padding: 2px 2px;
+    padding: 6px 4px;
   }
   
   .stat-value {
@@ -1740,19 +1751,20 @@ table td button { /* Tato pravidla přepíší ty výše definované pro 768px a
         </div>
 
         <div class="card">
-          <h3>Připomínky</h3>
-          <form id="remindersForm">
-            <div class="form-group">
-              <label for="reminderEnabled">Povolit připomínky:</label>
-              <input type="checkbox" id="reminderEnabled" style="width: auto;">
-            </div>
-            <div class="form-group">
-              <label for="reminderInterval">Interval připomínek (dny):</label>
-              <input type="number" id="reminderInterval" min="1" max="30" value="7">
-            </div>
-            <button type="submit">Uložit připomínky</button>
-          </form>
+    <h3>Připomínky</h3>
+    <form id="remindersForm">
+        <div class="form-group">
+            <label for="reminderEnabled">Povolit připomínky:</label>
+            <input type="checkbox" id="reminderEnabled" style="width: auto;">
         </div>
+        <div class="form-group">
+            <label for="reminderInterval">Interval připomínek (dny):</label>
+            <input type="number" id="reminderInterval" min="1" max="30" value="7">
+        </div>
+        <button type="submit">Uložit připomínky</button>
+        <button type="button" onclick="window.requestNotificationPermission()">🔔 Povolit webová upozornění</button>
+        </form>
+</div>
       </div>
     </div>
 
@@ -1784,7 +1796,7 @@ table td button { /* Tato pravidla přepíší ty výše definované pro 768px a
 
    
     <script>
-      // Globální proměnné (deklarace zůstává nahoře)
+    // Globální proměnné (deklarace zůstává nahoře)
     let weightChart, bmiChart, bodyFatOnlyChart, muscleMassOnlyChart, bodyWaterChart, manualBMRChart, manualAMRChart;
     let weightLog = [];
     let settings = {
@@ -2964,6 +2976,6 @@ table td button { /* Tato pravidla přepíší ty výše definované pro 768px a
         console.log("DOMContentLoaded: Hlavní inicializace aplikace dokončena.");
     });
 
-  </script>
+</script>
 </body>
 </html>
