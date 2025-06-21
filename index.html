@@ -2614,8 +2614,8 @@ table td button { /* Tato pravidla přepíší ty výše definované pro 768px a
     };
 
     window.exportToCSV = function() {
-        console.log("exportToCSV: Spuštěn export dat do CSV.");
-        if (weightLog.length === 0) { window.showNotification("Není co exportovat.", 2000); console.warn("exportToCSV: Žádná data k exportu."); return; }
+        console.log("exportToCSV: Spusten export dat do CSV.");
+        if (weightLog.length === 0) { window.showNotification("Neni co exportovat.", 2000); console.warn("exportToCSV: Zadna data k exportu."); return; }
         const headers = ['Datum', 'Vaha (kg)', 'BMI', 'Telesny tuk (%)', 'Svalova hmota (%)', 'Svalova hmota (%)', 'Voda v tele (%)', 'Manual BMR', 'Manual AMR', 'Poznamky'];
         const rows = weightLog.map(entry => {
             let musclePercent = '';
@@ -2635,34 +2635,34 @@ table td button { /* Tato pravidla přepíší ty výše definované pro 768px a
         link.setAttribute('href', encodedUri);
         link.setAttribute('download', `vaha_export_Jirik_${new Date().toISOString().split('T')[0]}.csv`);
         document.body.appendChild(link); link.click(); document.body.removeChild(link);
-        window.showNotification('CSV export dokončen!');
-        console.log("exportToCSV: Export CSV dokončen.");
+        window.showNotification('CSV export dokoncen!');
+        console.log("exportToCSV: Export CSV dokoncen.");
     };
 
     window.exportToPDF = function() {
-        console.log("exportToPDF: Spuštěn export dat do PDF.");
-        if (weightLog.length === 0) { window.showNotification("Není co exportovat.", 2000); console.warn("exportToPDF: Žádná data k exportu."); return; }
+        console.log("exportToPDF: Spusten export dat do PDF.");
+        if (weightLog.length === 0) { window.showNotification("Neni co exportovat.", 2000); console.warn("exportToPDF: Zadna data k exportu."); return; }
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         
-        doc.setFontSize(18); doc.text('Váhový report - Admirál Jiřík', 14, 22);
-        doc.setFontSize(11); doc.text(`Generováno: ${window.formatDateForDisplay(new Date().toISOString().split('T')[0])}`, 14, 30);
-        doc.text(`Výška: ${settings.height} cm, Věk: ${settings.age || '-'} let, Pohlaví: ${settings.gender === 'male' ? 'Muž' : 'Žena'}`, 14, 36);
+        doc.setFontSize(18); doc.text('Vahovy report - Admiral Jirik', 14, 22);
+        doc.setFontSize(11); doc.text(`Generovano: ${window.formatDateForDisplay(new Date().toISOString().split('T')[0])}`, 14, 30);
+        doc.text(`Vyska: ${settings.height} cm, Vek: ${settings.age || '-'} let, Pohlavi: ${settings.gender === 'male' ? 'Muz' : 'Zena'}`, 14, 36);
         
         const latestEntry = [...weightLog].sort((a, b) => new Date(b.date) - new Date(a.date))[0];
         if (latestEntry) {
             const currentBMI = window.calculateBMI(latestEntry.weight, settings.height);
             const theoBMR = window.calculateBMR(latestEntry.weight, settings.height, settings.age, settings.gender);
             const theoAMR = window.calculateAMR(theoBMR, settings.activityLevel);
-            doc.text(`Aktuální váha: ${latestEntry.weight.toFixed(1)} kg, BMI: ${currentBMI > 0 ? currentBMI.toFixed(1) : '-'}`, 14, 42);
+            doc.text(`Aktualni vaha: ${latestEntry.weight.toFixed(1)} kg, BMI: ${currentBMI > 0 ? currentBMI.toFixed(1) : '-'}`, 14, 42);
             if (latestEntry.manualBMR || latestEntry.manualAMR) {
-                doc.text(`Posl. zadaný BMR: ${latestEntry.manualBMR || '-'} kcal, AMR: ${latestEntry.manualAMR || '-'} kcal`, 14, 48);
+                doc.text(`Posl. zadany BMR: ${latestEntry.manualBMR || '-'} kcal, AMR: ${latestEntry.manualAMR || '-'} kcal`, 14, 48);
             } else {
-                doc.text(`Teoretický BMR: ${theoBMR > 0 ? Math.round(theoBMR) : '-'} kcal, AMR: ${theoAMR > 0 ? Math.round(theoAMR) : '-'} kcal`, 14, 48);
+                doc.text(`Teoreticky BMR: ${theoBMR > 0 ? Math.round(theoBMR) : '-'} kcal, AMR: ${theoAMR > 0 ? Math.round(theoAMR) : '-'} kcal`, 14, 48);
             }
         }
 
-        const tableColumn = ["#", "Datum", "Váha", "BMI", "Tuk%", "Svaly%", "Voda%", "Zad.BMR", "Zad.AMR"];
+        const tableColumn = ["#", "Datum", "Vaha", "BMI", "Tuk%", "Svaly%", "Voda%", "Zad.BMR", "Zad.AMR"];
         const tableRows = [];
         const sortedLog = [...weightLog].sort((a, b) => new Date(a.date) - new Date(b.date));
 
@@ -2686,22 +2686,22 @@ table td button { /* Tato pravidla přepíší ty výše definované pro 768px a
 
         doc.autoTable({ head: [tableColumn], body: tableRows, startY: 55, theme: 'grid', headStyles: { fillColor: [13, 17, 23], textColor: [0, 217, 255] }, styles: { font: "Consolas", cellPadding: 1.5, fontSize: 7 }, columnStyles: { 0: { cellWidth: 8 }, 1: { cellWidth: 20 }, } });
         doc.save(`vaha_report_Jirik_${new Date().toISOString().split('T')[0]}.pdf`);
-        window.showNotification('PDF report dokončen!');
-        console.log("exportToPDF: Export PDF dokončen.");
+        window.showNotification('PDF report dokoncen!');
+        console.log("exportToPDF: Export PDF dokoncen.");
     };
 
     window.exportChartsAsPDF = function() {
-        console.log("exportChartsAsPDF: Spuštěn export grafů do PDF.");
-        if (weightLog.length === 0) { window.showNotification("Není co exportovat.", 2000); console.warn("exportChartsAsPDF: Žádná data pro export."); return; }
+        console.log("exportChartsAsPDF: Spusten export grafu do PDF.");
+        if (weightLog.length === 0) { window.showNotification("Neni co exportovat.", 2000); console.warn("exportChartsAsPDF: Zadna data pro export."); return; }
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
         let yPos = 20; const chartWidth = 180; const chartHeight = 70; const spacing = 10;
-        doc.setFontSize(18); doc.text('Grafy vývoje - Admirál Jiřík', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+        doc.setFontSize(18); doc.text('Grafy vyvoje - Admiral Jirik', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
         const chartsToExport = [
-            { canvasId: 'weightChart', title: 'Vývoj váhy' }, { canvasId: 'bmiChart', title: 'Vývoj BMI' },
-            { canvasId: 'bodyFatOnlyChart', title: 'Vývoj tělesného tuku (%)' }, { canvasId: 'muscleMassOnlyChart', title: 'Vývoj svalové hmoty (%)' },
-            { canvasId: 'bodyWaterChart', title: 'Vývoj vody v těle (%)' }, { canvasId: 'manualBMRChart', title: 'Vývoj zadaného BMR (kcal)' },
-            { canvasId: 'manualAMRChart', title: 'Vývoj zadaného AMR (kcal)' }
+            { canvasId: 'weightChart', title: 'Vyvoj vahy' }, { canvasId: 'bmiChart', title: 'Vyvoj BMI' },
+            { canvasId: 'bodyFatOnlyChart', title: 'Vyvoj telesneho tuku (%)' }, { canvasId: 'muscleMassOnlyChart', title: 'Vyvoj svalove hmoty (%)' },
+            { canvasId: 'bodyWaterChart', title: 'Vyvoj vody v tele (%)' }, { canvasId: 'manualBMRChart', title: 'Vyvoj zadaneho BMR (kcal)' },
+            { canvasId: 'manualAMRChart', title: 'Vyvoj zadaneho AMR (kcal)' }
         ];
         chartsToExport.forEach((chartInfo, index) => {
             const canvas = document.getElementById(chartInfo.canvasId);
@@ -2717,23 +2717,23 @@ table td button { /* Tato pravidla přepíší ty výše definované pro 768px a
             doc.addImage(imgData, 'PNG', 15, yPos, chartWidth, chartHeight); yPos += chartHeight + spacing;
         });
         doc.save(`vaha_grafy_Jirik_${new Date().toISOString().split('T')[0]}.pdf`);
-        window.showNotification('Grafy exportovány do PDF!');
-        console.log("exportChartsAsPDF: Export grafů dokončen.");
+        window.showNotification('Grafy exportovany do PDF!');
+        console.log("exportChartsAsPDF: Export grafu dokoncen.");
     };
 
     window.exportBackup = function() {
-        console.log("exportBackup: Spuštěno vytváření úplné zálohy.");
+        console.log("exportBackup: Spusteno vytvareni uplne zalohy.");
         const backupData = {
             weightLog: weightLog, settings: settings, goals: goals,
-            exportDate: new Date().toISOString(), appName: "Pokročilý váhový tracker více admirála Jiříka", version: "1.5.0"
+            exportDate: new Date().toISOString(), appName: "Pokrocily vahovy tracker vice admirala Jirika", version: "1.5.0"
         };
         const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = `vaha_zaloha_Jirik_${new Date().toISOString().split('T')[0]}.json`;
         document.body.appendChild(link); link.click(); document.body.removeChild(link);
-        window.showNotification('Úplná záloha vytvořena!');
-        console.log("exportBackup: Úplná záloha vytvořena.");
+        window.showNotification('Uplna zaloha vytvorena!');
+        console.log("exportBackup: Uplna zaloha vytvorena.");
     };
 
     window.importFromCSV = async function(inputElement) {
